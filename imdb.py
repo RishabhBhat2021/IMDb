@@ -42,9 +42,11 @@ def search():
     display_frame = Frame(root,bg='black')
     display_frame.pack()
     
+    # Get the text entered in the entry box
     title = e.get()
     e.delete(0,END)
 
+    # Starting a request for the text and then scraping the title name
     result = requests.get(f'https://www.imdb.com/find?q={title}&s=tt&ref_=fn_al_tt_mr')
     src = result.content
     soup = BeautifulSoup(src,'lxml')
@@ -69,7 +71,8 @@ def search():
     # Poster
     tag_img = soup_title.find('img')
     poster_link = tag_img.attrs['src']
-    urllib.request.urlretrieve(poster_link,'poster.png')
+    # Retreiving the Image using urllib
+    urllib.request.urlretrieve(poster_link,'poster.png')  
 
     poster = ImageTk.PhotoImage(Image.open("poster.png"))
     poster_label = Label(display_frame,image=poster,bd=0,bg="black")
