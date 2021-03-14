@@ -24,11 +24,11 @@ class ImdbApp(tk.Tk):
 
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.wm_title(self, "IMDb Search Catalogue")
-        tk.Tk.iconbitmap(self, default='imdb ico logo.ico')
+        tk.Tk.iconbitmap(self, default='imdb_ico_logo.ico')
         tk.Tk.config(self, bg="black")
 
         # Use self.image for images 
-        self.imdb_logo = ImageTk.PhotoImage(Image.open("imdb logo.png"))
+        self.imdb_logo = ImageTk.PhotoImage(Image.open("imdb_logo.png"))
         imdb_logo_label = tk.Label(self, image=self.imdb_logo, bg="black")
         imdb_logo_label.pack(padx=10,pady=(20,10))        
 

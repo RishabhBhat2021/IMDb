@@ -12,7 +12,7 @@ from PIL import ImageTk,Image
 root = Tk()
 root.title('IMDb Rating')
 root.config(bg='black')
-root.iconbitmap('imdb ico logo.ico')
+root.iconbitmap('imdb_ico_logo.ico')
 
 # Frames to display the information
 main_frame = Frame(root,bg='black') 
@@ -21,7 +21,7 @@ display_frame = Frame(root,bg='black')
 main_frame.pack()
 
 # IMDb Logo 
-imdb_logo = ImageTk.PhotoImage(Image.open("imdb logo.png"))
+imdb_logo = ImageTk.PhotoImage(Image.open("imdb_logo.png"))
 imdb_logo_label = Label(main_frame,image=imdb_logo,bg="black")
 imdb_logo_label.pack(padx=20,pady=20)
 
