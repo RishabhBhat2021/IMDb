@@ -39,7 +39,7 @@ class ImdbApp(tk.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, SearchPage, HistoryPage, LoadingPage):
+        for F in (StartPage, SearchPage, HistoryPage, LoadingPage, ErrorPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -121,69 +121,73 @@ class SearchPage(tk.Frame):
         home_page = self.controller.get_page(StartPage)
         self.title = home_page.my_entry.get()
 
-        result = requests.get(f'https://www.imdb.com/find?q={self.title}&s=tt&ref_=fn_al_tt_mr')
-        src = result.content
-        soup = BeautifulSoup(src,'lxml')
+        try:
+            result = requests.get(f'https://www.imdb.com/find?q={self.title}&s=tt&ref_=fn_al_tt_mr')
+            src = result.content
+            soup = BeautifulSoup(src,'lxml')
 
-        tag = soup.find('td',class_='result_text')
+            tag = soup.find('td',class_='result_text')
 
-        self.title_name = tag.text
+            self.title_name = tag.text
 
-        title_id = tag.a.attrs['href']
-        self.title_link = f'https://www.imdb.com/{title_id}'
+            title_id = tag.a.attrs['href']
+            self.title_link = f'https://www.imdb.com/{title_id}'
 
-        result_title = requests.get(self.title_link)
-        src_title = result_title.content
-        soup_title = BeautifulSoup(src_title, 'lxml')
-        tag_title = soup_title.find('div', class_='ratingValue')
+            result_title = requests.get(self.title_link)
+            src_title = result_title.content
+            soup_title = BeautifulSoup(src_title, 'lxml')
+            tag_title = soup_title.find('div', class_='ratingValue')
 
-        self.title_rating = tag_title.text
-        self.title_rating = self.title_rating.strip("\n")
+            self.title_rating = tag_title.text
+            self.title_rating = self.title_rating.strip("\n")
 
-        # Title Name
-        self.title_label.config(text=f'{self.title_name}\nIMDb: {self.title_rating}')
-        self.title_label.pack(pady=10)
+            # Title Name
+            self.title_label.config(text=f'{self.title_name}\nIMDb: {self.title_rating}')
+            self.title_label.pack(pady=10)
 
-        # Poster
-        self.tag_img = soup_title.find('img')
-        self.poster_link = self.tag_img.attrs['src']
-        # Retreiving the Image using urllib
-        urllib.request.urlretrieve(self.poster_link, 'poster.png')  
+            # Poster
+            self.tag_img = soup_title.find('img')
+            self.poster_link = self.tag_img.attrs['src']
+            # Retreiving the Image using urllib
+            urllib.request.urlretrieve(self.poster_link, 'poster.png')  
 
-        self.poster = ImageTk.PhotoImage(Image.open("poster.png"))
-        self.poster_label.config(image=self.poster)
-        self.poster_label.pack(pady=10)
+            self.poster = ImageTk.PhotoImage(Image.open("poster.png"))
+            self.poster_label.config(image=self.poster)
+            self.poster_label.pack(pady=10)
 
-        # Cast
-        self.cast_list = ""
+            # Cast
+            self.cast_list = ""
 
-        self.cast_heading_label.pack(padx=20, pady=(20,15))
+            self.cast_heading_label.pack(padx=20, pady=(20,15))
 
-        self.tags_cast = soup_title.find_all('td',class_='primary_photo')
+            self.tags_cast = soup_title.find_all('td',class_='primary_photo')
+            
+            self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+            # Configuring the ScrollBar
+            self.scrollbar.config(command=self.cast_textbox.yview)
+
+            self.cast_textbox.config(yscrollcommand=self.scrollbar.set)
+
+            self.cast_textbox.delete("1.0", tk.END)
+
+            for self.tag_cast in self.tags_cast:
+                self.cast_list = self.tag_cast.a.img.attrs['alt'] + "\n"
+                self.cast_textbox.insert("1.0", self.cast_list, "center")
+
+            self.cast_frame.pack(padx=10, side=tk.RIGHT)
+            self.cast_textbox.pack()
+            self.title_frame.pack(pady=10, padx=10, side=tk.LEFT)
+            self.main_frame.pack(pady=10)
+
+            history_page = self.controller.get_page(HistoryPage)
+            history = self.title_name + " " + self.title_rating + "\n"
+            history_page.history_log.insert(tk.END, history)
+
+            self.controller.show_frame(SearchPage)
         
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # Configuring the ScrollBar
-        self.scrollbar.config(command=self.cast_textbox.yview)
-
-        self.cast_textbox.config(yscrollcommand=self.scrollbar.set)
-
-        self.cast_textbox.delete("1.0", tk.END)
-
-        for self.tag_cast in self.tags_cast:
-            self.cast_list = self.tag_cast.a.img.attrs['alt'] + "\n"
-            self.cast_textbox.insert("1.0", self.cast_list, "center")
-
-        self.cast_frame.pack(padx=10, side=tk.RIGHT)
-        self.cast_textbox.pack()
-        self.title_frame.pack(pady=10, padx=10, side=tk.LEFT)
-        self.main_frame.pack(pady=10)
-
-        history_page = self.controller.get_page(HistoryPage)
-        history = self.title_name + " " + self.title_rating + "\n"
-        history_page.history_log.insert(tk.END, history)
-
-        self.controller.show_frame(SearchPage)
+        except:
+            self.controller.show_frame(ErrorPage)
 
 
 class HistoryPage(tk.Frame):
@@ -223,7 +227,7 @@ class LoadingPage(tk.Frame):
         loading_label.pack()
 
 
-class NotFoundPage(tk.Frame):
+class ErrorPage(tk.Frame):
 
     def __init__(self, parent, controller):
 
@@ -232,7 +236,7 @@ class NotFoundPage(tk.Frame):
 
         self.controller = controller
 
-        not_found_label = tk.Label(self, text="Oops Title not found", bg="black", fg="white", font=BOLD_MEDIUM_FONT)
+        not_found_label = tk.Label(self, text="Oops...\nSome Error occured", bg="black", fg="white", font=BOLD_MEDIUM_FONT)
         not_found_label.pack()
 
         home_button = ttk.Button(self, text="Return to Home", command=lambda: controller.show_frame(StartPage))
