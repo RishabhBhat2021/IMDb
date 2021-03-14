@@ -1,13 +1,11 @@
-from sys import displayhook
-import threading
-
 import tkinter as tk
 from tkinter import ttk
-from tkinter.constants import CENTER
 
 from PIL import ImageTk, Image
 
 import os
+
+import threading
 
 import requests
 from bs4 import BeautifulSoup
@@ -223,6 +221,22 @@ class LoadingPage(tk.Frame):
 
         loading_label = tk.Label(self, text="Searching...\nPlease Wait", bg="black", fg="white", font=BOLD_MEDIUM_FONT)
         loading_label.pack()
+
+
+class NotFoundPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+
+        tk.Frame.__init__(self, parent)
+        tk.Frame.configure(self, bg="black")
+
+        self.controller = controller
+
+        not_found_label = tk.Label(self, text="Oops Title not found", bg="black", fg="white", font=BOLD_MEDIUM_FONT)
+        not_found_label.pack()
+
+        home_button = ttk.Button(self, text="Return to Home", command=lambda: controller.show_frame(StartPage))
+        home_button.pack(pady=10, side=tk.BOTTOM)
 
 
 def main():
