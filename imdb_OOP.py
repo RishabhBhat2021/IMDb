@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import font
 
 from PIL import ImageTk, Image
 
@@ -10,6 +11,8 @@ import threading
 import requests
 from bs4 import BeautifulSoup
 import urllib.request
+
+import itertools
 
 BOLD_LARGE_FONT = ("Helveticta", 30, "bold")
 BOLD_MEDIUM_FONT = ("Helveticta", 15, "bold")
@@ -107,14 +110,12 @@ class SearchPage(tk.Frame):
 
         self.cast_frame = tk.Frame(self.main_frame, bg="black")
 
-        self.cast_textbox = tk.Text(self.cast_frame, bg="black", fg="white", font=MEDIUM_FONT, width=30, height=15)
-        self.cast_textbox.tag_configure("center", justify='center')   # To center allign the text
-        self.cast_textbox.tag_add("center", "1.0", "end")             # in the Text Box: cast_textbox
+        self.cast_textbox = tk.Text(self.cast_frame, bg="black", fg="white", font=MEDIUM_FONT, width=35, height=15)
 
         # make a scrollbar
-        self.scrollbar = tk.Scrollbar(self.main_frame)
+        self.scrollbar = tk.Scrollbar(self.cast_frame)
 
-        self.cast_heading_label = tk.Label(self.cast_frame, text='Cast', bg='black', fg='white', font=BOLD_MEDIUM_FONT)
+        self.cast_heading_label = tk.Label(self.cast_frame, text='Cast Name   (Role)', bg='black', fg='white', font=BOLD_MEDIUM_FONT)
         
     def search_title(self):
 
@@ -158,10 +159,13 @@ class SearchPage(tk.Frame):
             # Cast
             self.cast_list = ""
 
-            self.cast_heading_label.pack(padx=20, pady=(20,15))
+            self.cast_heading_label.pack(padx=20, pady=(20,5))            
 
-            self.tags_cast = soup_title.find_all('td',class_='primary_photo')
-            
+            self.odd_tags = soup_title.find_all(class_="odd")
+            self.even_tags = soup_title.find_all(class_="even")
+
+            self.all_tags = self.odd_tags + self.even_tags
+
             self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
             # Configuring the ScrollBar
@@ -171,9 +175,17 @@ class SearchPage(tk.Frame):
 
             self.cast_textbox.delete("1.0", tk.END)
 
-            for self.tag_cast in self.tags_cast:
-                self.cast_list = self.tag_cast.a.img.attrs['alt'] + "\n"
-                self.cast_textbox.insert("1.0", self.cast_list, "center")
+            for tags in self.all_tags:
+                name_list = tags.find_all(class_="primary_photo")
+                role_list = tags.find_all(class_="character")
+
+                for (name, role) in itertools.zip_longest(name_list, role_list):
+                    self.cast_name = name.a.img.attrs['alt']
+                    self.cast_role = role.a.text
+
+                    self.cast_name_and_role = f"{self.cast_name}  ({self.cast_role})\n"
+
+                    self.cast_textbox.insert(tk.END, self.cast_name_and_role)
 
             self.cast_frame.pack(padx=10, side=tk.RIGHT)
             self.cast_textbox.pack()
@@ -185,7 +197,7 @@ class SearchPage(tk.Frame):
             history_page.history_log.insert(tk.END, history)
 
             self.controller.show_frame(SearchPage)
-        
+    
         except:
             self.controller.show_frame(ErrorPage)
 
