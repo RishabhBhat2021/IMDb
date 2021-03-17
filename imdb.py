@@ -85,7 +85,9 @@ class StartPage(tk.Frame):
 
         search_page = self.controller.get_page(SearchPage)
 
-        threading.Thread(target=search_page.search_title).start()
+        self.search_thread = threading.Thread(target=search_page.search_title)
+        self.search_thread.daemon = True
+        self.search_thread.start()
 
 
 class SearchPage(tk.Frame):
@@ -105,7 +107,10 @@ class SearchPage(tk.Frame):
         self.title_frame = tk.Frame(self.main_frame, bg="black")
 
         self.title_label = tk.Label(self.title_frame, font=BOLD_LARGE_FONT, bg="black", fg="white")
+        self.title_label.pack(pady=10)
+
         self.poster_label = tk.Label(self.title_frame, bd=0, bg="black")
+        self.poster_label.pack(pady=10)
 
         self.cast_frame = tk.Frame(self.main_frame, bg="black")
 
@@ -113,8 +118,15 @@ class SearchPage(tk.Frame):
 
         # make a scrollbar
         self.scrollbar = tk.Scrollbar(self.cast_frame)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.cast_heading_label = tk.Label(self.cast_frame, text='Cast Name   (Role)', bg='black', fg='white', font=BOLD_MEDIUM_FONT)
+        self.cast_heading_label.pack(padx=20, pady=(20,5))  
+
+        self.cast_frame.pack(padx=10, side=tk.RIGHT)
+        self.cast_textbox.pack()
+        self.title_frame.pack(pady=10, padx=10, side=tk.LEFT)
+        self.main_frame.pack(pady=10)
         
     def search_title(self):
 
@@ -143,8 +155,7 @@ class SearchPage(tk.Frame):
 
             # Title Name
             self.title_label.config(text=f'{self.title_name}\nIMDb: {self.title_rating}')
-            self.title_label.pack(pady=10)
-
+            
             # Poster
             self.tag_img = soup_title.find('img')
             self.poster_link = self.tag_img.attrs['src']
@@ -153,19 +164,12 @@ class SearchPage(tk.Frame):
 
             self.poster = ImageTk.PhotoImage(Image.open("poster.png"))
             self.poster_label.config(image=self.poster)
-            self.poster_label.pack(pady=10)
 
             # Cast
-            self.cast_list = ""
-
-            self.cast_heading_label.pack(padx=20, pady=(20,5))            
-
             self.odd_tags = soup_title.find_all(class_="odd")
             self.even_tags = soup_title.find_all(class_="even")
 
             self.all_tags = self.odd_tags + self.even_tags
-
-            self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
             # Configuring the ScrollBar
             self.scrollbar.config(command=self.cast_textbox.yview)
@@ -185,11 +189,6 @@ class SearchPage(tk.Frame):
                     self.cast_name_and_role = f"{self.cast_name}  ({self.cast_role})\n"
 
                     self.cast_textbox.insert(tk.END, self.cast_name_and_role)
-
-            self.cast_frame.pack(padx=10, side=tk.RIGHT)
-            self.cast_textbox.pack()
-            self.title_frame.pack(pady=10, padx=10, side=tk.LEFT)
-            self.main_frame.pack(pady=10)
 
             history_page = self.controller.get_page(HistoryPage)
             history = self.title_name + " " + self.title_rating + "\n"
@@ -258,7 +257,11 @@ def main():
     
     app = ImdbApp()
     app.mainloop()
-    os.remove("poster.png")
+
+    try:
+        os.remove("poster.png")
+    except:
+        pass
 
 if __name__ == "__main__":
     main()
