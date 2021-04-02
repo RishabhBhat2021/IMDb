@@ -6,8 +6,7 @@ Tkinter is used for the GUI.
 
 BeautifulSoup and requests used for Web Scraping
 
-imdb.py is class based code for the App with threading 
-imdb.py has more feautures like Search History, Loading Screen, Error Screen(Error Handling)
+This App is class based code for the App with threading 
+This App has feautures like Search History, Loading Screen, Error Screen(Error Handling)
 
-imdb_basic.py is just the basic app with few basic features only.
 
